@@ -9,7 +9,7 @@ namespace LogicaNegocio
 {
     public class Calculo
     {
-		public int Dividir(int a, int b)
+		public async Task<int> Dividir(int a, int b)
 		{
 			var resultado = 0;
 
@@ -19,7 +19,17 @@ namespace LogicaNegocio
 
 				Trace.TraceInformation("Tratando de realizar division [a/b]");
 
-				resultado = a / b;
+				resultado = await Task.Run(() =>
+				{
+					//try
+					//{
+						return a / b;
+					//}
+					//catch(Exception)
+					//{
+					//	throw;
+					//}
+				});
 			}
 			catch(Exception)
 			{

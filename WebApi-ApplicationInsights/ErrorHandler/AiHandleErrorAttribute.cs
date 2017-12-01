@@ -10,24 +10,6 @@ using Microsoft.ApplicationInsights.DataContracts;
 
 namespace WebApi_ApplicationInsights.ErrorHandler
 {
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
-	public class AiHandleErrorAttribute : HandleErrorAttribute
-	{
-		public override void OnException(System.Web.Mvc.ExceptionContext filterContext)
-		{
-			//if (filterContext != null && filterContext.HttpContext != null && filterContext.Exception != null)
-			//{
-			//	//If customError is Off, then AI HTTPModule will report the exception
-			//	if (filterContext.HttpContext.IsCustomErrorEnabled)
-			//	{
-			//		var ai = new TelemetryClient();
-			//		ai.TrackException(filterContext.Exception);
-			//	}
-			//}
-			base.OnException(filterContext);
-		}
-	}
-
 	public class WebApiExceptionLogger : ExceptionLogger
 	{
 		private readonly TelemetryClient _telemetryClient;
@@ -41,10 +23,13 @@ namespace WebApi_ApplicationInsights.ErrorHandler
 		{
 			var texto = new StringBuilder();
 
+			/// Preparando template de texto para la excepcion
 			texto = RegistrarError(texto, context, context.Exception, false, 1);
 
-			EventLog.WriteEntry("BTS-ONE", texto.ToString(), System.Diagnostics.EventLogEntryType.Error, 260);
+			/// Registrando excepcion en un EventLog
+			EventLog.WriteEntry("BTS-ONE", texto.ToString(), EventLogEntryType.Error);
 
+			/// Registrando la excepcion en la telemetria de Application Insights
 			_telemetryClient.TrackException(new Exception(texto.ToString(), context.Exception));
 
 		}
@@ -87,6 +72,24 @@ namespace WebApi_ApplicationInsights.ErrorHandler
 			}
 
 			return texto;
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+	public class AiHandleErrorAttribute : HandleErrorAttribute
+	{
+		public override void OnException(System.Web.Mvc.ExceptionContext filterContext)
+		{
+			//if (filterContext != null && filterContext.HttpContext != null && filterContext.Exception != null)
+			//{
+			//	//If customError is Off, then AI HTTPModule will report the exception
+			//	if (filterContext.HttpContext.IsCustomErrorEnabled)
+			//	{
+			//		var ai = new TelemetryClient();
+			//		ai.TrackException(filterContext.Exception);
+			//	}
+			//}
+			base.OnException(filterContext);
 		}
 	}
 }
